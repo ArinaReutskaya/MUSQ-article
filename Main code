@@ -1,0 +1,119 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+
+# Wczytanie danych z pliku CSV
+plik = r'C:\Users\DELL\Desktop\Praca magisterska\REIT\REIT.csv'
+df = pd.read_csv(plik, sep=';', parse_dates=["Data"], dayfirst=True)
+df.columns = ["Data", "MGRN", "REIT"]  # uproszczenie nazw kolumn
+
+# Konwersja przecinków na kropki i zmiana typu danych
+df["MGRN"] = df["MGRN"].str.replace(",", ".").astype(float)
+df["REIT"] = df["REIT"].str.replace(",", ".").astype(float)
+
+# Obliczanie miesięcznych stóp zwrotu
+df["MGRN_ret"] = df["MGRN"].pct_change()
+df["REIT_ret"] = df["REIT"].pct_change()
+
+# Indeks czasowy
+df.set_index("Data", inplace=True)
+
+# Indeksowane stopy zwrotu
+df["MGRN_index"] = (1 + df["MGRN_ret"].fillna(0)).cumprod() * 100
+df["REIT_index"] = (1 + df["REIT_ret"].fillna(0)).cumprod() * 100
+
+# Wykres porównujący
+plt.figure(figsize=(10, 6))
+plt.plot(df.index, df["MGRN_index"], label="MGRN FIZ", linewidth=2)
+plt.plot(df.index, df["REIT_index"], label="S&P Global REIT Index", linewidth=2, linestyle='--')
+plt.title("Indexed Performance of MGRN FIZ vs. REIT Benchmark")
+plt.xlabel("Date")
+plt.ylabel("Indexed Value (Start = 100)")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Parametry
+rf_annual = 0.053
+rf_monthly = rf_annual / 12
+
+# CAGR
+start = df["MGRN"].iloc[0]
+end = df["MGRN"].iloc[-1]
+n_months = len(df) - 1
+cagr = (end / start)**(12 / n_months) - 1
+
+# Średnie zwroty i zmienność
+avg_monthly_return = df["MGRN_ret"].mean()
+monthly_std = df["MGRN_ret"].std()
+annualized_volatility = monthly_std * np.sqrt(12)
+
+# Sharpe Ratio
+rf = 0.053  # stopa wolna od ryzyka roczna
+monthly_rf = rf / 12
+sharpe = (avg_monthly_return - monthly_rf) / monthly_std
+annualized_sharpe = sharpe * np.sqrt(12)
+
+# Active Return
+active_return = df["MGRN_ret"].mean() - df["REIT_ret"].mean()
+
+# Tracking Error
+tracking_error = (df["MGRN_ret"] - df["REIT_ret"]).std()
+
+# Information Ratio
+information_ratio = active_return / tracking_error
+
+# Sortino Ratio
+negative_returns = returns["MGRN"][returns["MGRN"] < rf_monthly]
+downside_std = negative_returns.std()
+sortino_ratio = (avg_return - rf_monthly) / downside_std if downside_std > 0 else np.nan
+
+# Max Drawdown
+cumulative = (1 + returns["MGRN"]).cumprod()
+rolling_max = cumulative.cummax()
+drawdown = (cumulative - rolling_max) / rolling_max
+max_drawdown = drawdown.min()
+
+# Regresja CAPM (nadwyżkowe zwroty)
+excess_y = df["MGRN_ret"] - rf_monthly
+excess_x = df["REIT_ret"] - rf_monthly
+excess_df = pd.concat([excess_x, excess_y], axis=1).dropna()
+X = excess_df.iloc[:, 0].values.reshape(-1, 1)
+y = excess_df.iloc[:, 1].values
+model = LinearRegression().fit(X, y)
+beta = model.coef_[0]
+alpha = model.intercept_
+r_squared = model.score(X, y)
+
+basic_stats = {
+    "CAGR (%)": round(cagr * 100, 4),
+    "Average Monthly Return (%)": round(avg_monthly_return * 100, 4),
+    "Monthly Std Dev (%)": round(monthly_std * 100, 4),
+    "Annualized Volatility (%)": round(annualized_volatility * 100, 4),
+    "Sharpe Ratio": round(sharpe, 4),
+    "Annualized Sharpe Ratio": round(annualized_sharpe, 4),
+    "Sortino Ratio": round(sortino_ratio, 4),
+    "Max Drawdown (%)": round(max_drawdown * 100, 4)
+}
+
+capm_stats = {
+    "Beta": round(beta, 4),
+    "Alpha (monthly %)": round(alpha * 100, 4),
+    "R-squared": round(r_squared, 4),
+    "Tracking Error (%)": round(tracking_error * 100, 4),
+    "Active Return (%)": round(active_return * 100, 4),
+    "Information Ratio": round(information_ratio, 4)
+}
+
+# Wyświetlenie wyników
+print(results_df)
+
+# Wyświetlenie formuły i wyników
+print("CAPM Model Results")
+print("="*30)
+print(f"Model: (R_funduszu − Rf) = {alpha:.4f} + {beta:.4f} × (R_benchmark − Rf)")
+print(f"Alpha: {alpha*100:.2f}%")
+print(f"Beta: {beta:.2f}")
+print(f"R-squared: {r_squared:.2f}")
