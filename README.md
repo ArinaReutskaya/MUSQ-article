@@ -36,6 +36,9 @@ Here are the results of the code:
 CAPM Model Results
 ==============================
 Model: (R_funduszu − Rf) = -0.0183 + 0.4100 × (R_benchmark − Rf)
+
 Alpha: -1.83%
+
 Beta: 0.41
+
 R-squared: 0.58
