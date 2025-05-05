@@ -1,44 +1,45 @@
-I use this code to calculate things for my article about REIT fund.
+MGRN FIZ – Early Performance Evaluation
 
-Here are the results of the code: 
+This repository contains all data, Python code, and outputs used in the case study:
 
+**Early Performance Snapshot of Mount Globalnego Rynku Nieruchomości FIZ (MGRN FIZ) versus the S&P Global REIT Index: A Case Study in Risk-Adjusted Returns Metrics**
 
-                        Metric  Value
-0                     CAGR (%) -13.92
+🎯 Purpose
 
-1   Average Monthly Return (%)  -1.19
+The goal of this project is to demonstrate how key performance indicators—such as **Sharpe ratio**, **Sortino ratio**, **tracking error**, and **CAPM alpha/beta**—can be applied in a real-world fund evaluation context. The analysis is based on six months of data from MGRN FIZ, the first REIT-like investment fund listed on the Warsaw Stock Exchange.
 
-2          Monthly Std Dev (%)   3.47
+> ⚠️ Disclaimer: This is an educational case study. It is not an investment recommendation nor a complete performance audit.
 
-3    Annualized Volatility (%)  12.02
+---
 
-4                 Sharpe Ratio  -0.47
+🛠 Tools Used
 
-5      Annualized Sharpe Ratio  -1.63
+- Python 3.11
+- `pandas`, `numpy` – data wrangling
+- `matplotlib` – charting
+- `scikit-learn`, `statsmodels` – regression analysis (CAPM)
 
-6                Sortino Ratio  -0.89
+---
 
-7           Tracking Error (%)   4.42
+📊 Method Summary
 
-8            Active Return (%)  -2.12
+- **Monthly returns**: based on closing prices from Bloomberg
+- **Risk-free rate**: 10-year Polish government bond yield (5.30% as of March 2025)
+- **CAPM model**: estimated using excess returns 
+- **Key metrics**: CAGR, Sharpe, Sortino, tracking error, alpha, beta, R²
 
-9            Information Ratio  -0.48
+---
 
-10           Alpha (monthly %)  -1.83
+💡 Reflections
 
-11                        Beta   0.41
+This project helped me:
+- understand how performance metrics behave with small data samples,
+- learn the limitations of CAPM in real fund analysis,
+- see how tracking error and alpha may diverge in short timeframes.
 
-12                   R-squared   0.58
+---
 
-13            Max Drawdown (%)  -6.58
+📬 Contact
 
-
-CAPM Model Results
-==============================
-Model: (R_funduszu − Rf) = -0.0183 + 0.4100 × (R_benchmark − Rf)
-
-Alpha: -1.83%
-
-Beta: 0.41
-
-R-squared: 0.58
+Feel free to reach out via LinkedIn: Arina Reutskaya (https://linkedin.com/in/arina-reutskaya)
+Or open an Issue in this repository.
