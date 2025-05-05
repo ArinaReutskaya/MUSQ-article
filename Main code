@@ -3,14 +3,20 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-# Wczytanie danych z pliku CSV
-plik = r'C:\Users\DELL\Desktop\Praca magisterska\REIT\REIT.csv'
-df = pd.read_csv(plik, sep=';', parse_dates=["Data"], dayfirst=True)
-df.columns = ["Data", "MGRN", "REIT"]  # uproszczenie nazw kolumn
+# Wczytanie danych bezpośrednio z tekstu
+from io import StringIO
 
-# Konwersja przecinków na kropki i zmiana typu danych
-df["MGRN"] = df["MGRN"].str.replace(",", ".").astype(float)
-df["REIT"] = df["REIT"].str.replace(",", ".").astype(float)
+data = """
+Data;MGRN;REIT
+2024-10-31;916.22;171.52
+2024-11-30;921.32;189.58
+2024-12-31;864.86;177.1
+2025-01-31;880.06;179.83
+2025-02-28;892.19;183.86
+2025-03-31;860.74;178.14
+"""
+
+df = pd.read_csv(StringIO(data), sep=";", parse_dates=["Data"])
 
 # Obliczanie miesięcznych stóp zwrotu
 df["MGRN_ret"] = df["MGRN"].pct_change()
@@ -23,21 +29,9 @@ df.set_index("Data", inplace=True)
 df["MGRN_index"] = (1 + df["MGRN_ret"].fillna(0)).cumprod() * 100
 df["REIT_index"] = (1 + df["REIT_ret"].fillna(0)).cumprod() * 100
 
-# Wykres porównujący
-plt.figure(figsize=(10, 6))
-plt.plot(df.index, df["MGRN_index"], label="MGRN FIZ", linewidth=2)
-plt.plot(df.index, df["REIT_index"], label="S&P Global REIT Index", linewidth=2, linestyle='--')
-plt.title("Indexed Performance of MGRN FIZ vs. REIT Benchmark")
-plt.xlabel("Date")
-plt.ylabel("Indexed Value (Start = 100)")
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
-
 # Parametry
 rf_annual = 0.053
-rf_monthly = rf_annual / 12
+monthly_rf = (1 + rf)**(1/12) - 1
 
 # CAGR
 start = df["MGRN"].iloc[0]
@@ -51,9 +45,7 @@ monthly_std = df["MGRN_ret"].std()
 annualized_volatility = monthly_std * np.sqrt(12)
 
 # Sharpe Ratio
-rf = 0.053  # stopa wolna od ryzyka roczna
-monthly_rf = rf / 12
-sharpe = (avg_monthly_return - monthly_rf) / monthly_std
+sharpe = (avg_monthly_return - rf_monthly) / monthly_std
 annualized_sharpe = sharpe * np.sqrt(12)
 
 # Active Return
@@ -66,12 +58,12 @@ tracking_error = (df["MGRN_ret"] - df["REIT_ret"]).std()
 information_ratio = active_return / tracking_error
 
 # Sortino Ratio
-negative_returns = returns["MGRN"][returns["MGRN"] < rf_monthly]
+negative_returns = df["MGRN_ret"][df["MGRN_ret"] < rf_monthly]
 downside_std = negative_returns.std()
-sortino_ratio = (avg_return - rf_monthly) / downside_std if downside_std > 0 else np.nan
+sortino_ratio = (avg_monthly_return - rf_monthly) / downside_std if downside_std > 0 else np.nan
 
 # Max Drawdown
-cumulative = (1 + returns["MGRN"]).cumprod()
+cumulative = (1 + df["MGRN_ret"].fillna(0)).cumprod()
 rolling_max = cumulative.cummax()
 drawdown = (cumulative - rolling_max) / rolling_max
 max_drawdown = drawdown.min()
@@ -87,6 +79,7 @@ beta = model.coef_[0]
 alpha = model.intercept_
 r_squared = model.score(X, y)
 
+# Przygotowanie tabel
 basic_stats = {
     "CAGR (%)": round(cagr * 100, 4),
     "Average Monthly Return (%)": round(avg_monthly_return * 100, 4),
@@ -107,13 +100,39 @@ capm_stats = {
     "Information Ratio": round(information_ratio, 4)
 }
 
+basic_df = pd.DataFrame(basic_stats.items(), columns=["Metric", "Value"])
+capm_df = pd.DataFrame(capm_stats.items(), columns=["Metric", "Value"])
+
 # Wyświetlenie wyników
 print(results_df)
 
 # Wyświetlenie formuły i wyników
 print("CAPM Model Results")
 print("="*30)
-print(f"Model: (R_funduszu − Rf) = {alpha:.4f} + {beta:.4f} × (R_benchmark − Rf)")
+print(f"Model: (R_fund − Rf) = {alpha:.4f} + {beta:.4f} × (R_benchmark − Rf)")
 print(f"Alpha: {alpha*100:.2f}%")
 print(f"Beta: {beta:.2f}")
 print(f"R-squared: {r_squared:.2f}")
+
+# Wykres porównujący
+plt.figure(figsize=(10, 6))
+plt.plot(df.index, df["MGRN_index"], label="MGRN FIZ", linewidth=2)
+plt.plot(df.index, df["REIT_index"], label="S&P Global REIT Index", linewidth=2, linestyle='--')
+plt.title("Indexed Performance of MGRN FIZ vs. REIT Benchmark")
+plt.xlabel("Date")
+plt.ylabel("Indexed Value (Start = 100)")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Obliczanie tracking difference jako różnicy stóp zwrotu w każdym miesiącu
+df["Tracking Difference"] = df["MGRN_ret"] - df["REIT_ret"]
+
+# Zaokrąglenie i konwersja do procentów
+df_tracking = df[["Tracking Difference"]].copy()
+df_tracking["Tracking Difference"] = (df_tracking["Tracking Difference"] * 100).round(2).astype(str) + "%"
+
+# Wyświetlenie tabeli
+df_tracking = df_tracking.reset_index()
+print(df_tracking)
