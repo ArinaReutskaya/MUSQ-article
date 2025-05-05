@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-# Wczytanie danych bezpośrednio z tekstu
+# Wczytanie danych
 from io import StringIO
 
 data = """
@@ -82,7 +82,6 @@ r_squared = model.score(X, y)
 print("\n")
 print("\n")
 
-
 # Przygotowanie tabel
 basic_stats = {
     "CAGR (%)": round(cagr * 100, 4),
@@ -115,7 +114,6 @@ print(capm_df)
 print("\n")
 print("\n")
 
-
 # Wyświetlenie wyników
 #print(results_df)
 
@@ -128,7 +126,6 @@ print(f"Beta: {beta:.2f}")
 print(f"R-squared: {r_squared:.2f}")
 print("\n")
 print("\n")
-
 
 # Wykres porównujący
 plt.figure(figsize=(10, 6))
@@ -143,7 +140,6 @@ plt.tight_layout()
 plt.show()
 print("\n")
 print("\n")
-
 
 # Obliczanie tracking difference jako różnicy stóp zwrotu w każdym miesiącu
 df["Tracking Difference"] = df["MGRN_ret"] - df["REIT_ret"]
