@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
 
-# Wczytanie danych
+# Wczytanie danych bezpośrednio z tekstu
 from io import StringIO
 
 data = """
@@ -37,7 +37,7 @@ monthly_rf = (1 + rf)**(1/12) - 1
 start = df["MGRN"].iloc[0]
 end = df["MGRN"].iloc[-1]
 n_months = len(df) - 1
-cagr = (end / start)*(12 / n_months) - 1
+cagr = (end / start) ** (12 / n_months) - 1
 
 # Średnie zwroty i zmienność
 avg_monthly_return = df["MGRN_ret"].mean()
@@ -68,19 +68,9 @@ rolling_max = cumulative.cummax()
 drawdown = (cumulative - rolling_max) / rolling_max
 max_drawdown = drawdown.min()
 
-# Regresja CAPM (nadwyżkowe zwroty)
-excess_y = df["MGRN_ret"] - rf_monthly
-excess_x = df["REIT_ret"] - rf_monthly
-excess_df = pd.concat([excess_x, excess_y], axis=1).dropna()
-X = excess_df.iloc[:, 0].values.reshape(-1, 1)
-y = excess_df.iloc[:, 1].values
-model = LinearRegression().fit(X, y)
-beta = model.coef_[0]
-alpha = model.intercept_
-r_squared = model.score(X, y)
+print("\n")
+print("\n")
 
-print("\n")
-print("\n")
 
 # Przygotowanie tabel
 basic_stats = {
@@ -91,39 +81,15 @@ basic_stats = {
     "Sharpe Ratio": round(sharpe, 4),
     "Annualized Sharpe Ratio": round(annualized_sharpe, 4),
     "Sortino Ratio": round(sortino_ratio, 4),
-    "Max Drawdown (%)": round(max_drawdown * 100, 4)
-}
-
-capm_stats = {
-    "Beta": round(beta, 4),
-    "Alpha (monthly %)": round(alpha * 100, 4),
-    "R-squared": round(r_squared, 4),
+    "Max Drawdown (%)": round(max_drawdown * 100, 4),
     "Tracking Error (%)": round(tracking_error * 100, 4),
     "Active Return (%)": round(active_return * 100, 4),
     "Information Ratio": round(information_ratio, 4)
 }
 
 basic_df = pd.DataFrame(basic_stats.items(), columns=["Metric", "Value"])
-capm_df = pd.DataFrame(capm_stats.items(), columns=["Metric", "Value"])
 
 print(basic_df)
-print("\n")
-print("\n")
-
-print(capm_df)
-print("\n")
-print("\n")
-
-# Wyświetlenie wyników
-#print(results_df)
-
-# Wyświetlenie formuły i wyników
-print("CAPM Model Results")
-print("="*30)
-print(f"Model: (R_fund − Rf) = {alpha:.4f} + {beta:.4f} × (R_benchmark − Rf)")
-print(f"Alpha: {alpha*100:.2f}%")
-print(f"Beta: {beta:.2f}")
-print(f"R-squared: {r_squared:.2f}")
 print("\n")
 print("\n")
 
@@ -141,15 +107,46 @@ plt.show()
 print("\n")
 print("\n")
 
-# Obliczanie tracking difference jako różnicy stóp zwrotu w każdym miesiącu
-df["Tracking Difference"] = df["MGRN_ret"] - df["REIT_ret"]
 
-# Zaokrąglenie i konwersja do procentów
+# Obliczanie tracking difference
+df["Tracking Difference"] = df["MGRN_ret"] - df["REIT_ret"]
 df_tracking = df[["Tracking Difference"]].copy()
 df_tracking["Tracking Difference"] = (df_tracking["Tracking Difference"] * 100).round(2).astype(str) + "%"
-
-# Wyświetlenie tabeli
 df_tracking = df_tracking.reset_index()
 print(df_tracking)
+print("\n")
+print("\n")
+
+import statsmodels.api as sm
+
+# Nadwyżkowe zwroty
+excess_y = df["MGRN_ret"] - rf_monthly
+excess_x = df["REIT_ret"] - rf_monthly
+excess_df = pd.concat([excess_x, excess_y], axis=1).dropna()
+excess_df.columns = ["X", "Y"]
+
+# Stała
+X = sm.add_constant(excess_df["X"])
+y = excess_df["Y"]
+
+# Model regresji
+capm_model = sm.OLS(y, X).fit()
+alpha = capm_model.params["const"]
+beta = capm_model.params["X"]
+r_squared = capm_model.rsquared
+alpha_pval = capm_model.pvalues["const"]
+beta_pval = capm_model.pvalues["X"]
+alpha_se = capm_model.bse["const"]
+beta_se = capm_model.bse["X"]
+
+# Tabela wyników CAPM
+capm_results = pd.DataFrame({
+    "Metric": ["Alpha", "Beta", "R-squared", "Alpha p-value", "Beta p-value", "Alpha SE", "Beta SE"],
+    "Value": [round(alpha * 100, 4), round(beta, 4), round(r_squared, 4),
+              round(alpha_pval, 4), round(beta_pval, 4),
+              round(alpha_se * 100, 4), round(beta_se, 4)]
+})
+print(capm_results)
+
 print("\n")
 print("\n")
