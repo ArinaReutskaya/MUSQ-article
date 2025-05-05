@@ -37,7 +37,7 @@ monthly_rf = (1 + rf)**(1/12) - 1
 start = df["MGRN"].iloc[0]
 end = df["MGRN"].iloc[-1]
 n_months = len(df) - 1
-cagr = (end / start)**(12 / n_months) - 1
+cagr = (end / start)*(12 / n_months) - 1
 
 # Średnie zwroty i zmienność
 avg_monthly_return = df["MGRN_ret"].mean()
@@ -79,6 +79,10 @@ beta = model.coef_[0]
 alpha = model.intercept_
 r_squared = model.score(X, y)
 
+print("\n")
+print("\n")
+
+
 # Przygotowanie tabel
 basic_stats = {
     "CAGR (%)": round(cagr * 100, 4),
@@ -103,8 +107,17 @@ capm_stats = {
 basic_df = pd.DataFrame(basic_stats.items(), columns=["Metric", "Value"])
 capm_df = pd.DataFrame(capm_stats.items(), columns=["Metric", "Value"])
 
+print(basic_df)
+print("\n")
+print("\n")
+
+print(capm_df)
+print("\n")
+print("\n")
+
+
 # Wyświetlenie wyników
-print(results_df)
+#print(results_df)
 
 # Wyświetlenie formuły i wyników
 print("CAPM Model Results")
@@ -113,6 +126,9 @@ print(f"Model: (R_fund − Rf) = {alpha:.4f} + {beta:.4f} × (R_benchmark − Rf
 print(f"Alpha: {alpha*100:.2f}%")
 print(f"Beta: {beta:.2f}")
 print(f"R-squared: {r_squared:.2f}")
+print("\n")
+print("\n")
+
 
 # Wykres porównujący
 plt.figure(figsize=(10, 6))
@@ -125,6 +141,9 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+print("\n")
+print("\n")
+
 
 # Obliczanie tracking difference jako różnicy stóp zwrotu w każdym miesiącu
 df["Tracking Difference"] = df["MGRN_ret"] - df["REIT_ret"]
@@ -136,3 +155,5 @@ df_tracking["Tracking Difference"] = (df_tracking["Tracking Difference"] * 100).
 # Wyświetlenie tabeli
 df_tracking = df_tracking.reset_index()
 print(df_tracking)
+print("\n")
+print("\n")
