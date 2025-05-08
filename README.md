@@ -23,8 +23,8 @@ The aim of this project is to illustrate how core performance indicators—such 
 
 📊 Method Summary
 
-- **Monthly returns**: based on closing prices from Bloomberg
-- **Risk-free rate**: 10-year Polish government bond yield (5.30% as of March 2025)
+- **Monthly returns**: based on closing prices 
+- **Risk-free rate**: 
 - **CAPM model**: estimated using excess returns 
 - **Key metrics**: CAGR, Sharpe, Sortino, tracking error, alpha, beta, R²
 
