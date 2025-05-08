@@ -1,12 +1,12 @@
-MGRN FIZ – Early Performance Evaluation
+🎵 MUSQ ETF – Exploratory Performance Analysis
 
 This repository contains all data, Python code, and outputs used in the case study:
 
-**Early Performance Snapshot of Mount Globalnego Rynku Nieruchomości FIZ (MGRN FIZ) versus the S&P Global REIT Index: A Case Study in Risk-Adjusted Returns Metrics**
+Early Performance Evaluation of MUSQ Global Music Industry ETF versus SPDR S&P 500 High Dividend ETF: A Case Study in Risk-Adjusted Return Metrics
 
 🎯 Purpose
 
-The goal of this project is to demonstrate how key performance indicators—such as **Sharpe ratio**, **Sortino ratio**, **tracking error**, and **CAPM alpha/beta**—can be applied in a real-world fund evaluation context. The analysis is based on six months of data from MGRN FIZ, the first REIT-like investment fund listed on the Warsaw Stock Exchange.
+The aim of this project is to illustrate how core performance indicators—such as the Sharpe ratio, Sortino ratio, tracking error, and CAPM alpha/beta—behave in practice when applied to a novel asset class ETF. Using daily price data, the analysis compares the MUSQ ETF, which targets the global music industry, with a high-dividend equity benchmark (SPDR SPYD). While the timeframe is intentionally limited, the goal is to show both the power and limits of quantitative fund evaluation when data are sparse, volatile, or unconventional.
 
 > ⚠️ Disclaimer: This is an educational case study. It is not an investment recommendation nor a complete performance audit.
 
